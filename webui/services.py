@@ -31,6 +31,7 @@ from utils import (
     mask_secret,
 )
 
+
 def get_brawler_stats(_player_info, _brawler_name):
     return None, None
 
@@ -623,7 +624,6 @@ class WebDataService:
             return self.get_settings_payload("debug")
         if section == "webhook":
             config = self._load_config("cfg/webhook_config.toml")
-            # Empty secrets are ignored by _apply_updates, so the UI's clear button lists them explicitly.
             clear_secrets = payload.get("_clear_secrets")
             if isinstance(clear_secrets, list):
                 for key in self.SECRET_WEBHOOK_FIELDS:
@@ -646,25 +646,19 @@ class WebDataService:
             raise KeyError(f"Unknown settings section: {section}")
 
         schema, path = schema_map[section]
-        
-        # Load the existing configuration to preserve other non-schema keys (like wall_model_classes)
         config = self._load_config(path)
-        
-        # Reset schema fields to their default values defined in services.py
         for key, (value_type, default_val) in schema.items():
             config[key] = self._serialize(value_type, default_val)
-            
-        # Ensure specified credential fields are empty as requested
+
         if section == "general":
             config["player_tag"] = ""
         elif section == "webhook":
             config["discord_id"] = ""
             config["discord_bot_token"] = ""
             config["discord_guild_id"] = ""
-            
+
         self._save_config(path, config)
 
-        # Post-reset processing
         if section == "general":
             if self.get_settings_payload("general").get("play_order") != "in_order":
                 self.save_queue_data([
@@ -760,8 +754,6 @@ class WebDataService:
                 power_level = self._parse_int(row.get("power_level"))
                 played_at = self._parse_match_datetime(row.get("date_time"))
 
-                # Session figures power the dashboard and must stay independent
-                # from the optional History-page date filter.
                 if session_started_at and played_at and played_at.timestamp() >= float(session_started_at):
                     session_summary["trophy_delta"] += trophy_delta
                     if result == "victory":
@@ -943,7 +935,7 @@ class WebDataService:
         auth_payload = self.get_auth_state()
         return {
             "app": {
-                "name": "PylaAI",
+                "name": "FruxX AI",
                 "version": self.get_current_version(),
                 "latest_version": self.get_latest_version_safe(),
                 "warnings": self.get_warnings(),
@@ -1013,7 +1005,6 @@ class WebDataService:
                 if key not in schema:
                     skipped.append(f"{section}.{key}: unsupported setting")
                     continue
-                # These existing public flags belong to paid-only features.
                 if key in {"advanced_debug_visuals", "record_debug_preview_clips"}:
                     skipped.append(f"{section}.{key}: not imported")
                     continue
@@ -1064,6 +1055,7 @@ class WebDataService:
         candidates = list(dict.fromkeys([configured, 5137, 5555, 7555, 5635, 62001, 62025, 62026,
                                         7556, 7565, 16416] + list(range(5556, 5566)) +
                                        list(range(5565, 5756, 10)) + list(range(16384, 16415))))
+
         def open_port(port):
             try:
                 with socket.socket() as sock:
@@ -1071,14 +1063,17 @@ class WebDataService:
                     return port if sock.connect_ex(("127.0.0.1", port)) == 0 else None
             except OSError:
                 return None
+
         if deep:
             with ThreadPoolExecutor(max_workers=128) as pool:
                 candidates = [port for port in pool.map(open_port, range(1000, 65536)) if port is not None]
+
         def connect(port):
             try:
                 adb.connect(f"127.0.0.1:{port}", timeout=1)
             except Exception:
                 pass
+
         with ThreadPoolExecutor(max_workers=32) as pool:
             list(pool.map(connect, candidates))
         devices = []
