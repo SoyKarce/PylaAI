@@ -7,9 +7,11 @@ from pathlib import Path
 
 # Monkey-patch inspect.getfile to prevent Nuitka + PyTorch crash
 _original_getfile = inspect.getfile
+
 def _patched_getfile(obj):
     res = _original_getfile(obj)
     return res if res is not None else "<unknown_nuitka_file>"
+
 
 inspect.getfile = _patched_getfile
 
@@ -30,15 +32,16 @@ if __name__ == "__main__" and len(sys.argv) >= 9 and sys.argv[1] == "--debug-vie
     )
     sys.exit(0)
 
+
 def parse_cli_args(argv=None):
     parser = argparse.ArgumentParser(
-        prog="PylaAI",
-        description="PylaAI, the best free and open source brawl stars bot.",
+        prog="FruxX AI",
+        description="FruxX AI, the best free and open source brawl stars bot.",
     )
     parser.add_argument(
         "--no-console",
         action="store_true",
-        help="Hide PylaAI's own console and write output to a log file.",
+        help="Hide FruxX AI's own console and write output to a log file.",
     )
     interface_group = parser.add_mutually_exclusive_group()
     interface_group.add_argument(
@@ -111,7 +114,7 @@ if CLI_ARGS.no_console:
 
 if CLI_ARGS.no_console and not CONSOLE_HIDDEN:
     print(
-        "--no-console ignored: this console belongs to the terminal PylaAI was "
+        "--no-console ignored: this console belongs to the terminal FruxX AI was "
         "started from, so output stays here."
     )
 
@@ -150,7 +153,7 @@ def pyla_main(discord_bot, queue_data, stop_event=None, runtime_control=None):
         def __init__(self):
             current_playstyle = load_toml_as_dict("cfg/bot_config.toml").get("current_playstyle", "default_up.pyla")
             try:
-                self.max_fps = int(load_toml_as_dict("cfg/general_config.toml")['max_fps'])
+                self.max_fps = int(load_toml_as_dict("cfg/general_config.toml")["max_fps"])
             except ValueError:
                 self.max_fps = None
 
@@ -181,8 +184,8 @@ def pyla_main(discord_bot, queue_data, stop_event=None, runtime_control=None):
             self.state_checker_thread = None
             self.update_trophy_observer()
 
-            self.run_for_minutes = int(load_toml_as_dict("cfg/general_config.toml")['run_for_minutes'])
-            self.webhook_ping_every_minutes = load_toml_as_dict("cfg/webhook_config.toml")['ping_every_x_minutes']
+            self.run_for_minutes = int(load_toml_as_dict("cfg/general_config.toml")["run_for_minutes"])
+            self.webhook_ping_every_minutes = load_toml_as_dict("cfg/webhook_config.toml")["ping_every_x_minutes"]
             self.time_since_last_webhook_ping = time.time()
             self.start_time = time.time()
             self.time_to_stop = False
@@ -310,7 +313,7 @@ def pyla_main(discord_bot, queue_data, stop_event=None, runtime_control=None):
 
             self.window_controller.release_movement()
             self.runtime_control.mark_paused()
-            cprint("Pyla is paused in the lobby. Waiting for Start to resume.", "#AAE5A4")
+            cprint("FruxX AI is paused in the lobby. Waiting for Start to resume.", "#AAE5A4")
 
             while self.should_pause() and not self.should_stop():
                 state = self.get_latest_state()
@@ -504,10 +507,12 @@ def open_browser_later(local_url):
 
     threading.Thread(target=_open, daemon=True, name="pyla-browser-launcher").start()
 
+
 def stop_on_window_close(app):
     """Ask a running bot instance to stop when its desktop window closes."""
+
     def _on_close():
-        print("PylaAI window closed, shutting down.")
+        print("FruxX AI window closed, shutting down.")
         try:
             app.config["runtime_manager"].stop()
         except Exception as error:
@@ -534,21 +539,22 @@ def run_interface(app, local_url, interface_mode):
 
     if interface_mode == "browser":
         open_browser_later(local_url)
-        print("PylaAI is opening the local web UI in the system browser.")
+        print("FruxX AI is opening the local web UI in the system browser.")
     else:
-        print(f"PylaAI is running headless. Open {local_url} manually to use the local web UI.")
+        print(f"FruxX AI is running headless. Open {local_url} manually to use the local web UI.")
 
     app.run(host="127.0.0.1", port=int(local_url.rsplit(":", 1)[1]), debug=False, use_reloader=False)
 
+
 if __name__ == "__main__":
-    print("Starting PylaAI, the best free and open source brawl stars bot")
+    print("Starting FruxX AI, the best free and open source brawl stars bot")
     print("The only official discord is", get_discord_link())
     from webui import create_app
 
     port = find_open_port()
     app = create_app(pyla_main, start_discord_bot=True)
     local_url = f"http://127.0.0.1:{port}"
-    print(f"Starting Pyla web UI at {local_url}")
+    print(f"Starting FruxX web UI at {local_url}")
     if CONSOLE_HIDDEN:
         print(f"Console output is written to {CONSOLE_LOG_FILE}")
     if CLI_ARGS.interface_mode is not None:
